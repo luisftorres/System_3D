@@ -2,8 +2,8 @@ import smbus
 import time
 import numpy as np
 bus = smbus.SMBus(3)
-address = 0x1f      #0x5e    # 0x5e esta direccion de sensor se otorga despues del hard reset
-adrress_set = 0x1f  #0x5e    # 0x4a esta direccion de sensor se fija en la configuracion 
+address = 0x5e      #0x5e    # 0x5e esta direccion de sensor se otorga despues del hard reset
+adrress_set = 0x5e  #0x5e    # 0x4a esta direccion de sensor se fija en la configuracion 
 LPM = 0x05 
 FPM = 0x06
 MCM = 0x07              # 0xff Master Controled Mode

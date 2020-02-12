@@ -387,7 +387,10 @@ void Parametric_Curve(){
      for (int g = 0;g<42;g++){xyz_points[g] = '\0';}
     }
     
-    if(END == 1){
+             digitalWrite(X_ENABLE_PIN,HIGH);
+             digitalWrite(Y_ENABLE_PIN,HIGH);
+             digitalWrite(Z_ENABLE_PIN,HIGH);
+    if(digitalRead(END) == HIGH){
     while(1){  
     if(Serial.available()>0)
     {Serial.readBytesUntil('*',xyz_points,100);
@@ -452,9 +455,6 @@ void Parametric_Curve(){
      if(Dz < 0){sentidoz = sentido2;}else{sentidoz = sentido1;}
    
    while(1){
-             digitalWrite(X_ENABLE_PIN,HIGH);
-             digitalWrite(Y_ENABLE_PIN,HIGH);
-             digitalWrite(Z_ENABLE_PIN,HIGH);
           if(digitalRead(END_HALL_SENSOR) == HIGH){
               for(int p_x = 0;p_x<abs(Dx);p_x++){X_1_STEP(sentidox);}
               for(long int p_z = 0;p_z<abs(Dz);p_z++){Z_1_STEP(sentidoz);}
@@ -619,7 +619,6 @@ void Z_Move_1_STEP(){
 }
 /*  Move X axis 1 Step */
 void X_1_STEP(boolean sentido){
-  if((digitalRead(X_MIN_PIN)==LOW)||(sentido == sentido1)){
   digitalWrite(X_ENABLE_PIN,LOW);
   digitalWrite(X_DIR_PIN,sentido);
   digitalWrite(X_STEP_PIN,HIGH);
@@ -627,27 +626,24 @@ void X_1_STEP(boolean sentido){
   digitalWrite(X_STEP_PIN,LOW);
   delayMicroseconds(V_measure);
   
-  }
 }
 /*  Move Y axis 1 Step */
 void Y_1_STEP(boolean sentido){
-  if((digitalRead(Y_MIN_PIN)==LOW)||(sentido == sentido2)){
   digitalWrite(Y_ENABLE_PIN,LOW);
   digitalWrite(Y_DIR_PIN,sentido);
   digitalWrite(Y_STEP_PIN,HIGH);
   delayMicroseconds(V_measure);
   digitalWrite(Y_STEP_PIN,LOW);
-  delayMicroseconds(V_measure);}
+  delayMicroseconds(V_measure);
 }
 /*  Move Z axis 1 Step */
 void Z_1_STEP(boolean sentido){
-  if((digitalRead(Z_DER_PIN)==LOW)||(sentido == sentido1)){
   digitalWrite(Z_ENABLE_PIN,LOW);
   digitalWrite(Z_DIR_PIN,sentido);
   digitalWrite(Z_STEP_PIN,HIGH);
   delayMicroseconds(V_measure);
   digitalWrite(Z_STEP_PIN,LOW);
-  delayMicroseconds(V_measure);}
+  delayMicroseconds(V_measure);
 }
 
 /*  Make Matriz on x and z axis */
