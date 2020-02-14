@@ -15,9 +15,9 @@ f.write("REG0,REG1,REG2,REG3,REG4,REG5,REG6\n")
 
 #Configure GPIO
 pi.wiringPiSetupGpio()
-PIN_STAR = 	19
-PIN_END = 	26
-END = 20
+PIN_STAR = 	16
+PIN_END = 	19
+END = 26
 pi.pinMode(PIN_STAR,0)
 pi.pinMode(PIN_END,1)
 pi.pinMode(END,0)
@@ -31,7 +31,7 @@ tlv.CONF()
 port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=1.0, parity = serial.PARITY_NONE)
 sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
 
-rr = b'35'
+rr = b'155'
 aa = b'@'
 # punto 1
 X1 = b'3694'
@@ -45,9 +45,9 @@ Z2 = b'0'
 
 # Resolution
 R_Factor = b'10'
-V_measure = b'30'
-V_manual = b'100'
-MODO = b'2'
+V_measure = b'100'
+V_manual = b'20'
+MODO = b'1'
 WORD = rr + aa + MODO + aa + X1 + aa + Y1 + aa + Z1 + aa + X2 + aa + Y2 + aa + Z2 + aa + R_Factor + aa + V_measure + aa + V_manual + b'@*'
 print(WORD)
 # Start presentation system
@@ -72,9 +72,11 @@ c = 0.005
 ra = 0.02
 rb = 0.02
 lz = 0.0001
-
-NO_DOTS = 10
+P1 = [0.01,0.01,0.01]
+P2 = [0.05,0.05,0.05]
 LAPS = 1
+NO_DOTS = 5
+t = np.transpose(np.linspace(0,1,NO_DOTS))
 
 u = np.transpose(np.linspace(0,2*LAPS*np.pi,NO_DOTS))
 v = np.transpose(np.linspace(0,lz,NO_DOTS))
@@ -88,7 +90,8 @@ if rr == b'35':
 	pi.digitalWrite(END,1)
 
 	for z in range(0,NO_DOTS):
-		D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
+		#D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
+		D = fun.LINEA_RECTA(P1,P2,t[z])
 		print(D)
 		pi.digitalWrite(PIN_END,1)
 		Px = b'%d'%D[0]
@@ -99,7 +102,7 @@ if rr == b'35':
 		while True:
 			if pi.digitalRead(PIN_STAR) == 1:
 				pi.digitalWrite(PIN_END,0)
-				tlv.time.sleep(0.010)
+				tlv.time.sleep(0.005)
 				data = tlv.READ(5)
 				for i in range(0,5):
 					for j in range(0,7):
@@ -107,6 +110,8 @@ if rr == b'35':
 					f.write("\n")	
 				break
 	pi.digitalWrite(END,0)
+	#port.write(b'*\r\n')
+	tlv.time.sleep(1)
 
 if rr == b'155':
 	SS = sio.readline()

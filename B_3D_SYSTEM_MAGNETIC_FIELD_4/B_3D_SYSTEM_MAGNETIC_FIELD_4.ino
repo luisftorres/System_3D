@@ -34,7 +34,7 @@
 char arranque[200];
 char xyz_points[42];
 int V_measure = 30;
-int V_manual = 100;
+int V_manual = 10;
 int tiempoDelay_s1 = 500;    // Tiempo de espera para que la sonda deje de vibrar
 int tiempoDelay_s2 = 10;
 char AUX[10];
@@ -450,10 +450,21 @@ void Parametric_Curve(){
          ff = ff + 1;
        }}
      
-     
+     long int Md;
       Dx = x - x0;
       Dy = y - y0;
-      Dz = z - z0; 
+      Dz = z - z0;
+      if((Dx == 0) && (Dy != 0) && (Dz != 0)){Md = max(abs(Dy),abs(Dz));}
+      if((Dx == 0) && (Dy == 0) && (Dz != 0)){Md = abs(Dz);}
+      if((Dx == 0) && (Dy != 0) && (Dz == 0)){Md = abs(Dy);}
+      if((Dx != 0) && (Dy == 0) && (Dz != 0)){Md = max(abs(Dx),abs(Dz));}
+      if((Dx != 0) && (Dy == 0) && (Dz == 0)){Md = abs(Dx);}
+      if((Dx != 0) && (Dy == 0) && (Dz != 0)){Md = max(abs(Dx),abs(Dz));}
+      if((Dx != 0) && (Dy != 0) && (Dz != 0)){Md = max(abs(Dx),abs(Dz));
+    Md = max(Md,abs(Dy));}
+//      long int factors[] = {abs(Dx)/Md,abs(Dy)/Md,abs(Dz)/Md}; 
+//      float Mf = max(factors[0],factors[1]);
+//      Mf = max(Mf,factors[1]);
    // x sentido2 izquierda
    // y sentido1 abajo
    // z sentido2 atras
@@ -462,10 +473,27 @@ void Parametric_Curve(){
      if(Dz < 0){sentidoz = sentido2;}else{sentidoz = sentido1;}
    
    while(1){
-          if(digitalRead(END_HALL_SENSOR) == HIGH){
-              for(int p_x = 0;p_x<abs(Dx);p_x++){X_1_STEP(sentidox);}
-              for(long int p_z = 0;p_z<abs(Dz);p_z++){Z_1_STEP(sentidoz);}
-              for(long int p_y = 0;p_y<abs(Dy);p_y++){Y_1_STEP(sentidoy);}
+          if(digitalRead(END_HALL_SENSOR) == HIGH){ 
+          digitalWrite(X_ENABLE_PIN,LOW);
+          digitalWrite(Y_ENABLE_PIN,LOW);
+          digitalWrite(Z_ENABLE_PIN,LOW);
+          digitalWrite(X_DIR_PIN,sentidox);
+          digitalWrite(Y_DIR_PIN,sentidoy);
+          digitalWrite(Z_DIR_PIN,sentidoz);
+            
+            for(int kk = 0; kk < Md;kk++){
+              if(kk < abs(Dx)){digitalWrite(X_STEP_PIN,HIGH);}
+              if(kk < abs(Dy)){digitalWrite(Y_STEP_PIN,HIGH);}
+              if(kk < abs(Dz)){digitalWrite(Z_STEP_PIN,HIGH);}
+              delayMicroseconds(V_measure);
+                digitalWrite(X_STEP_PIN,LOW);
+                digitalWrite(Y_STEP_PIN,LOW);
+                digitalWrite(Z_STEP_PIN,LOW);
+              delayMicroseconds(V_measure);
+  
+            }
+            
+            
               delay(tiempoDelay_s2);
               digitalWrite(START_HALL_SENSOR,HIGH);
               delay(1);
@@ -544,12 +572,12 @@ void Z_Motor_Home()
     
 /*  X axis Motor Move 1 Step */
 void X_Move_1_STEP(){
-  digitalWrite(X_ENABLE_PIN,HIGH);
+ // digitalWrite(X_ENABLE_PIN,HIGH);
   if((digitalRead(X_FRONT_PIN)==HIGH) && (digitalRead(X_BEHIND_PIN)==LOW)){
       digitalWrite(X_ENABLE_PIN,LOW);
       digitalWrite(X_DIR_PIN,sentido1);
       digitalWrite(X_STEP_PIN,HIGH);
-      delayMicroseconds(3);
+      delayMicroseconds(V_manual);
       digitalWrite(X_STEP_PIN,LOW);
       delayMicroseconds(V_manual);
       x++;
@@ -573,7 +601,7 @@ void X_Move_1_STEP(){
 
 /*  Y axis Motor Move 1 Step */
 void Y_Move_1_STEP(){
-  digitalWrite(Y_ENABLE_PIN,HIGH);
+ // digitalWrite(Y_ENABLE_PIN,HIGH);
   if((digitalRead(Y_FRONT_PIN)==HIGH) && (digitalRead(Y_BEHIND_PIN)==LOW)){
       digitalWrite(Y_ENABLE_PIN,LOW);
       digitalWrite(Y_DIR_PIN,sentido2);
@@ -602,7 +630,7 @@ void Y_Move_1_STEP(){
 
 /*  Z axis Motor Move 1 Step */
 void Z_Move_1_STEP(){
-  digitalWrite(Z_ENABLE_PIN,HIGH);
+ // digitalWrite(Z_ENABLE_PIN,HIGH);
   if((digitalRead(Z_FRONT_PIN)==HIGH) && (digitalRead(Z_BEHIND_PIN)==LOW)){
       digitalWrite(Z_ENABLE_PIN,LOW);
       digitalWrite(Z_DIR_PIN,sentido1);

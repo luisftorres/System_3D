@@ -6,6 +6,20 @@ def CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u,v):
 	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
 	return F
 	
+def LINEA_RECTA(P1,P2,t):
+	F = np.zeros((3,1))
+	F = [[(P1[0] + t*(P2[0]-P1[0]))*160000],[(P1[1] + t*(P2[1]-P1[1]))*800000],[(P1[2] + t*(P2[2]-P1[2]))*800000]]
+	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
+	return F
+	
+def CIRCULO(a,b,c,r,t):
+	F = np.zeros((3,1))
+	F = [[a + r*np.cos(t)],[],[a + r*np.cos(t)]]
+	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
+	return F
+	
+	
+	
 # def d_CILINDRO_ESFERICO(a,b,c,ra,rb,lz,NO_DOTS,LAPS,u,v):
 	# dF = np.zeros((3,1))
 	# dF = [[(a - ra*np.cos(u))*160000],[(c + v)*800000],[(b - rb*np.sin(u))*800000]]
