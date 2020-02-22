@@ -2,13 +2,13 @@ import numpy as np
 
 def CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u,v):
 	F = np.zeros((3,1))
-	F = [[(a - ra*np.cos(u))*160000],[(c + v)*800000],[(b - rb*np.sin(u))*800000]]
+	F = [[(a - ra*np.cos(u))*160000],[(c + v)*200000],[(b - rb*np.sin(u))*200000]]
 	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
 	return F
 	
 def LINEA_RECTA(P1,P2,t):
 	F = np.zeros((3,1))
-	F = [[(P1[0] + t*(P2[0]-P1[0]))*160000],[(P1[1] + t*(P2[1]-P1[1]))*800000],[(P1[2] + t*(P2[2]-P1[2]))*800000]]
+	F = [[(P1[0] + t*(P2[0]-P1[0]))*160000],[(P1[1] + t*(P2[1]-P1[1]))*200000],[(P1[2] + t*(P2[2]-P1[2]))*200000]]
 	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
 	return F
 	

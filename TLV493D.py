@@ -2,7 +2,7 @@ import smbus
 import time
 import numpy as np
 bus = smbus.SMBus(3)
-address = 0x1f      #0x5e    # 0x5e esta direccion de sensor se otorga despues del hard reset
+address = 0x1f     #0x5e    # 0x5e esta direccion de sensor se otorga despues del hard reset
 adrress_set = 0x1f  #0x5e    # 0x4a esta direccion de sensor se fija en la configuracion 
 LPM = 0x05 
 FPM = 0x06
@@ -20,8 +20,8 @@ def Configure(addr,value):
     return -1
 
 def read_1(addr):
-        data = bus.read_i2c_block_data(addr,0x00,7)
-        return data
+    data = bus.read_i2c_block_data(addr,0x00,7)
+    return data
 
 def CONF():
     HardReset()
@@ -46,3 +46,7 @@ def READ(no_read):
         else:
             i = i + 1
     return data[1:no_read+1]
+
+# CONF()
+# X = READ(100)
+# print(X)

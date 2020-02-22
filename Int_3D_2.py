@@ -91,7 +91,7 @@ while True:
 			break
 		if pi.digitalRead(PIN_STAR) == 1:
 			pi.digitalWrite(PIN_END,0)
-			tlv.time.sleep(0.010)
+			#tlv.time.sleep(0.010)
 			data = tlv.READ(5)
 			for i in range(0,5):
 				for j in range(0,7):
