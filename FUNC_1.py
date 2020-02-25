@@ -17,6 +17,13 @@ def CIRCULO(a,b,c,r,t):
 	F = [[a + r*np.cos(t)],[],[a + r*np.cos(t)]]
 	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
 	return F
+
+def ESPIRAL_ARQUIMIDES(a,b,c,t1,t):
+	F = np.zeros((3,1))
+	F = [[(a + t1*np.cos(t))*160000],[c*200000],[(b + t1*np.sin(t))*200000]]
+	F = [int(F[0][0]),int(F[1][0]),int(F[2][0])]
+	return F
+	
 	
 	
 	

@@ -35,13 +35,13 @@
 #define END               27
 
 boolean sentido1 = LOW, sentido2 = HIGH;                   // DERECHA // IZQUIERDA
-char arranque[200], xyz_points[42], AUX[10];
+char arranque[100], xyz_points[100], AUX[7];
 int V_measure = 30, V_manual = 10;
 int tiempoDelay_s1 = 500, tiempoDelay_s2 = 10;    // Tiempo de espera para que la sonda deje de vibrar
 int STAR, MODE, R_factor;
-long int PX1, PY1, PZ1, PX2, PY2, PZ2, x, y, z, Dx, Dy, Dz;
+long int PX1, PY1, PZ1, PX2, PY2, PZ2, x = 0, y = 0, z = 0, Dx = 0, Dy = 0, Dz = 0;
 long int Point1[3],Point2[3];
-long int res_x = 16, res_yz = 80, resolution_x, resolution_yz;                    // 160 steps by 1mm // 801 steps by 1mm // 160 steps by 1mm
+long int res_x = 16, res_yz = 20, resolution_x, resolution_yz;                    // 160 steps by 1mm // 801 steps by 1mm // 160 steps by 1mm
 void X_Motor_Home(), Y_Motor_Home(), Z_Motor_Home(), Motors_Home(), X_Move_1_STEP(), Y_Move_1_STEP(), Z_Move_1_STEP();
 void X_1_STEP(boolean sentido),Y_1_STEP(boolean sentido), Z_1_STEP(boolean sentido);
 
@@ -60,13 +60,19 @@ void XYZ_ENABLE(boolean mode);
 void setup() {Configuration();}
 
 void loop() {
+  STAR = 0; MODE = 0; R_factor = 0; PX1 = 0; PY1 = 0; PZ1 = 0; PX2 = 0; PY2 = 0; PZ2 = 0;
+  V_measure = 30, V_manual = 10;
+  x = 0, y = 0, z = 0, Dx = 0, Dy = 0, Dz = 0;
+  tiempoDelay_s1 = 500, tiempoDelay_s2 = 10;
+  sentido1 = LOW, sentido2 = HIGH; 
+  
   digitalWrite(START_HALL_SENSOR,LOW);
   digitalWrite(END,LOW);
   XYZ_ENABLE(HIGH);
-  STAR = 0; MODE = 0; PX1 = 0; PY1 = 0; PZ1 = 0; PX2 = 0; PY2 = 0; PZ2 = 0;
-    
+  
+  
   if(arranque[0] != '\0'){
-    Serial.begin(115200);
+    Configuration();
     for (int g = 0;g<7;g++){AUX[g] = '\0';}
     for (int g = 0;g<200;g++){arranque[g] = '\0';}}
    
@@ -139,6 +145,7 @@ void loop() {
     Serial.print("@*");
     CHOOSE_MATRIZ(); 
     Serial.flush();
+    Serial.end();
   }
   //delay(1000);
   
@@ -148,118 +155,116 @@ void loop() {
 /* Parametric Curve*/
 
 void Parametric_Curve(){
-  delay(1000);
+  //delay(1000);
   boolean wdog = true;
   pinMode(END,INPUT);
-  boolean sentidox;
-  boolean sentidoy;
-  boolean sentidoz;
+  boolean sentidox = HIGH;
+  boolean sentidoy = LOW;
+  boolean sentidoz = HIGH;
   long int x0 = 0,y0 = 0,z0 = 0;
-  int vx, vy, vz, g, len_1, h, ff, i;
-  long int Md;
+  int vx = 0, vy = 0, vz = 0, g = 0, len_1 = 100, h = 0, ff = 0 , i = 0;
+  long int Md = 0;
   XYZ_ENABLE(HIGH);
+  AUX[0] = '\0'; xyz_points[0] = '\0';
     
   while (wdog){
-    
-       if (digitalRead(END) == LOW) {wdog = false; break;}
-      
-       if (xyz_points[0] != '\0'){
-           for (g = 0; g<7 ; g++) AUX[g] = '\0';
-           for (g = 0; g<42; g++) xyz_points[g] = '\0';
-          }
+    if (digitalRead(END) == LOW) {wdog = false; break;}
+      AUX[0] = '\0'; xyz_points[0] = '\0';
+      if (xyz_points[0] != '\0'){
+        for (g = 0; g<7 ; g++) AUX[g] = '\0';
+        for (g = 0; g<42; g++) xyz_points[g] = '\0';}
     
     if (digitalRead(END) == HIGH){
-        while(wdog){  
-             if (digitalRead(END) == LOW)  {wdog = false; break;}
-             if (Serial.available()>0) {
-                Serial.readBytesUntil('*', xyz_points, 100);
+      while(wdog){  
+        if (digitalRead(END) == LOW)  {wdog = false; break;}
+        if (Serial.available()>0) {
+        len_1 = Serial.readBytesUntil('*', xyz_points, 100);
+        h = 0, ff = 0;
+        Md = 0; Dx = 0; Dy = 0; Dz = 0;
     
-    len_1 = sizeof(xyz_points);
-    h = 0, ff = 0, i;
-    
-    for (i = 0 ; i < len_1 ; i++) 
-        if (xyz_points[i]  == '@'){
+        for (i = 0 ; i < len_1 ; i++){ 
+          if (xyz_points[i]  == '@'){
             h = h + 1;
             switch(h){
-            case 1:
-            x    = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            case 2:
-            y    = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            case 3:
-            z     = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            case 4:
-            vx     = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            case 5:
-            vy     = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            case 6:
-            vz     = String(AUX).toInt();
-            for (int g = 0;g<7;g++){AUX[g] = '\0';}
-            ff = 0;
-            break;
-            default:
-            break;
-          }
-        }
-        else
-           AUX[ff++] = xyz_points[i];
+              case 1:
+                x    = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              case 2:
+                y    = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              case 3:
+                z     = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              case 4:
+                vx     = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              case 5:
+                vy     = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              case 6:
+                vz     = String(AUX).toInt();
+                for (g = 0;g<7;g++){AUX[g] = '\0';}
+                ff = 0;
+                break;
+              default:
+                ff = 0;
+                break;}}
+          else
+            AUX[ff++] = xyz_points[i];}
      
-      if (digitalRead(END) == LOW)  {wdog = false; break;}
+ 
+        if (digitalRead(END) == LOW)  {wdog = false; break;}
      
-      Dx = x - x0; Dy = y - y0; Dz = z - z0;
-      if((Dx == 0) && (Dy != 0) && (Dz != 0)){Md = max(abs(Dy),abs(Dz));}
-      if((Dx == 0) && (Dy == 0) && (Dz != 0)){Md = abs(Dz);}
-      if((Dx == 0) && (Dy != 0) && (Dz == 0)){Md = abs(Dy);}
-      if((Dx != 0) && (Dy == 0) && (Dz != 0)){Md = max(abs(Dx),abs(Dz));}
-      if((Dx != 0) && (Dy == 0) && (Dz == 0)){Md = abs(Dx);}
-      if((Dx != 0) && (Dy != 0) && (Dz == 0)){Md = max(abs(Dx),abs(Dy));}
-      if((Dx != 0) && (Dy != 0) && (Dz != 0)) {Md = max(abs(Dx),abs(Dz)); Md = max(Md,abs(Dy));}
-      if(Dx < 0){sentidox = sentido2;}else{sentidox = sentido1;}
-      if(Dy < 0){sentidoy = sentido1;}else{sentidoy = sentido2;}
-      if(Dz < 0){sentidoz = sentido2;}else{sentidoz = sentido1;}
+        Dx = x - x0; Dy = y - y0; Dz = z - z0;
+        if(Dx < 0){sentidox = sentido2;}else{sentidox = sentido1;}
+        if(Dy < 0){sentidoy = sentido1;}else{sentidoy = sentido2;}
+        if(Dz < 0){sentidoz = sentido2;}else{sentidoz = sentido1;}
+        if((Dx == 0) && (Dy != 0) && (Dz != 0)){Md = max(abs(Dy),abs(Dz));}
+        if((Dx == 0) && (Dy == 0) && (Dz != 0)){Md = abs(Dz);}
+        if((Dx == 0) && (Dy != 0) && (Dz == 0)){Md = abs(Dy);}
+        if((Dx != 0) && (Dy == 0) && (Dz != 0)){Md = max(abs(Dx),abs(Dz));}
+        if((Dx != 0) && (Dy == 0) && (Dz == 0)){Md = abs(Dx);}
+        if((Dx != 0) && (Dy != 0) && (Dz == 0)){Md = max(abs(Dx),abs(Dy));}
+        if((Dx != 0) && (Dy != 0) && (Dz != 0)) {Md = max(abs(Dx),abs(Dz)); Md = max(Md,abs(Dy));}
+        if((Dx == 0) && (Dy == 0) && (Dz == 0)){Md = 0;}
    
-   while(1){
-          if(digitalRead(END_HALL_SENSOR) == HIGH){
-          XYZ_ENABLE(LOW);
-          digitalWrite(X_DIR_PIN,sentidox);
-          digitalWrite(Y_DIR_PIN,sentidoy);
-          digitalWrite(Z_DIR_PIN,sentidoz);
-            
-            for(int kk = 0; kk < Md;kk++){
-              if(kk < abs(Dx)){digitalWrite(X_STEP_PIN,HIGH);}
-              if(kk < abs(Dy)){digitalWrite(Y_STEP_PIN,HIGH);}
-              if(kk < abs(Dz)){digitalWrite(Z_STEP_PIN,HIGH);}
-              delayMicroseconds(V_measure);
+         while(1){
+           if(digitalRead(END_HALL_SENSOR) == HIGH){
+              XYZ_ENABLE(LOW);
+              digitalWrite(X_DIR_PIN,sentidox);
+              digitalWrite(Y_DIR_PIN,sentidoy);
+              digitalWrite(Z_DIR_PIN,sentidoz);
+                
+              for(int kk = 0; kk < Md;kk++){
+                if(kk < abs(Dx)){digitalWrite(X_STEP_PIN,HIGH);}
+                if(kk < abs(Dy)){digitalWrite(Y_STEP_PIN,HIGH);}
+                if(kk < abs(Dz)){digitalWrite(Z_STEP_PIN,HIGH);}
+                delayMicroseconds(V_measure);
                 digitalWrite(X_STEP_PIN,LOW);
                 digitalWrite(Y_STEP_PIN,LOW);
                 digitalWrite(Z_STEP_PIN,LOW);
-              delayMicroseconds(V_measure);
-            }
-            
-            
-         //delay(tiempoDelay_s2);
-         digitalWrite(START_HALL_SENSOR,HIGH);
-         delay(1);
-         digitalWrite(START_HALL_SENSOR,LOW);   
-         break;}}
-         break;}}
+                delayMicroseconds(V_measure);}
+                
+                
+              //delay(tiempoDelay_s2);
+              digitalWrite(START_HALL_SENSOR,HIGH);
+              delay(1);
+              digitalWrite(START_HALL_SENSOR,LOW);   
+              break;}}
+          break;}}
           
-  x0 = x; y0 = y; z0 = z;}}
-  XYZ_ENABLE(HIGH);}
+    x0 = x; y0 = y; z0 = z;}}
+XYZ_ENABLE(HIGH);}
 
 
 /*  X axis Motor send to Home */
@@ -779,8 +784,8 @@ void Print_Direction(){
     float yd = y;
     float zd = z;
     xd = xd/160;
-    yd = yd/801;
-    zd = zd/801;
+    yd = yd/201;
+    zd = zd/201;
     Serial.print("COORDENADA ACTUAL");
     Serial.print("@X = ");
     Serial.print(x);
@@ -801,8 +806,7 @@ void Print_Direction(){
 
 void Configuration(){
   Serial.begin(115200);
-  Serial.println(".............. BIENVENIDOS .................");
-
+ Serial.println("Bienvenidos");
 /* X Bridge PIN */
  pinMode(X_STEP_PIN,OUTPUT);
  pinMode(X_DIR_PIN,OUTPUT);

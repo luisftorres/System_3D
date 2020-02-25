@@ -28,7 +28,7 @@ pi.digitalWrite(PIN_END,0)
 tlv.CONF()
 
 
-port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=1.0, parity = serial.PARITY_NONE)
+port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=2.0, parity = serial.PARITY_NONE)
 sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
 
 rr = b'35'
@@ -72,14 +72,21 @@ c = 0.005
 ra = 0.05
 rb = 0.05
 lz = 0.05
-P1 = [0.01,0.01,0.01]
+P1 = [0.01,0.01,0.04]
 P2 = [0.1,0.1,0.1]
 LAPS = 10
-NO_DOTS = 10000
+NO_DOTS = 1000
 t = np.transpose(np.linspace(0,1,NO_DOTS))
 
 u = np.transpose(np.linspace(0,2*LAPS*np.pi,NO_DOTS))
 v = np.transpose(np.linspace(0,lz,NO_DOTS))
+
+# Espiral de arquimides
+ae = 0.05
+be = 0.05
+ce = 0.065
+t1e = np.transpose(np.linspace(0,0.04,NO_DOTS))
+te = np.transpose(np.linspace(0,20*np.pi,NO_DOTS))
 
 tlv.time.sleep(1)
 vx = b'40'
@@ -93,18 +100,20 @@ if rr == b'35':
 	#print(Home)
 	for z in range(0,NO_DOTS):
 		#D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
-		D = fun.LINEA_RECTA(P1,P2,t[z])
+		#D = fun.LINEA_RECTA(P1,P2,t[z])
+		D = fun.ESPIRAL_ARQUIMIDES(ae,be,ce,t1e[z],te[z])
 		print(D)
 		pi.digitalWrite(PIN_END,1)
 		Px = b'%d'%D[0]
 		Py = b'%d'%D[1]
 		Pz = b'%d'%D[2]
-		POS = Px + aa + Py + aa + Pz + aa + vx + aa + vy + aa + vz + b'@*'
-		port.write(POS + b'\r\n')
+		POS = Px + aa + Py + aa + Pz + aa + vx + aa + vy + aa + vz + b'@*\r\n'
+		port.write(POS)
+		#print(POS)
 		while True:
 			if pi.digitalRead(PIN_STAR) == 1:
 				pi.digitalWrite(PIN_END,0)
-				#tlv.time.sleep(0.1)
+				#tlv.time.sleep(2)
 				data = tlv.READ(5)
 				pi.digitalWrite(PIN_END,1)
 				for i in range(0,5):
@@ -120,7 +129,7 @@ if rr == b'155':
 	print(SS) 
 
 	# set the point 1 and the point 2
-	port.timeout = 100.0
+	port.timeout = 300.0
 	while True:
 		
 		P = port.read_until(b'*',150)

@@ -7,7 +7,7 @@ adrress_set = 0x1f  #0x5e    # 0x4a esta direccion de sensor se fija en la confi
 LPM = 0x05 
 FPM = 0x06
 MCM = 0x07              # 0xff Master Controled Mode
-t_wait = 0.0005;
+t_wait = 0.001;
 mode_sensor = MCM
 cols = 7
 
