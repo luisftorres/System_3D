@@ -47,7 +47,7 @@ Z2 = b'0'
 R_Factor = b'10'
 V_measure = b'150'
 V_manual = b'150'
-MODO = b'1'
+MODO = b'2'
 WORD = rr + aa + MODO + aa + X1 + aa + Y1 + aa + Z1 + aa + X2 + aa + Y2 + aa + Z2 + aa + R_Factor + aa + V_measure + aa + V_manual + b'@*'
 #print(WORD)
 # Start presentation system
@@ -75,7 +75,7 @@ lz = 0.05
 P1 = [0.01,0.01,0.04]
 P2 = [0.1,0.1,0.1]
 LAPS = 10
-NO_DOTS = 1000
+NO_DOTS = 5000
 t = np.transpose(np.linspace(0,1,NO_DOTS))
 
 u = np.transpose(np.linspace(0,2*LAPS*np.pi,NO_DOTS))
@@ -86,7 +86,7 @@ ae = 0.05
 be = 0.05
 ce = 0.065
 t1e = np.transpose(np.linspace(0,0.04,NO_DOTS))
-te = np.transpose(np.linspace(0,20*np.pi,NO_DOTS))
+te = np.transpose(np.linspace(0,50*np.pi,NO_DOTS))
 
 tlv.time.sleep(1)
 vx = b'40'
@@ -96,33 +96,49 @@ if rr == b'35':
 	pi.pinMode(END,1)   # OUTPUT
 	pi.digitalWrite(END,1)
 	
-	#Home = port.read_until(b'*',150)
-	#print(Home)
-	for z in range(0,NO_DOTS):
-		#D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
-		#D = fun.LINEA_RECTA(P1,P2,t[z])
-		D = fun.ESPIRAL_ARQUIMIDES(ae,be,ce,t1e[z],te[z])
-		print(D)
-		pi.digitalWrite(PIN_END,1)
-		Px = b'%d'%D[0]
-		Py = b'%d'%D[1]
-		Pz = b'%d'%D[2]
-		POS = Px + aa + Py + aa + Pz + aa + vx + aa + vy + aa + vz + b'@*\r\n'
-		port.write(POS)
-		#print(POS)
+	if MODO == b'1':
+		port.timeout = 300.0
 		while True:
-			if pi.digitalRead(PIN_STAR) == 1:
-				pi.digitalWrite(PIN_END,0)
-				#tlv.time.sleep(2)
-				data = tlv.READ(5)
-				pi.digitalWrite(PIN_END,1)
-				for i in range(0,5):
-					for j in range(0,7):
-						f.write(format(int(data[i][j])) + ",")
-					f.write("\n")	
+			P = port.read_until(b'*',150)
+			i = 0
+			h = ''
+			while (i < len(P)):
+				if chr(P[i]) == '@':
+					print(h)
+					h = ''
+				else:
+					h = h + chr(P[i])
+				if chr(P[i]) == '*':
+					break
+				i = i + 1
+			if chr(P[i-1]) == '+':
 				break
-	pi.digitalWrite(END,0)
-	tlv.time.sleep(1)
+	if MODO == b'2':			
+			
+		for z in range(0,NO_DOTS):
+			#D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
+			#D = fun.LINEA_RECTA(P1,P2,t[z])
+			D = fun.ESPIRAL_ARQUIMIDES(ae,be,ce,t1e[z],te[z])
+			print(D)
+			pi.digitalWrite(PIN_END,1)
+			Px = b'%d'%D[0]
+			Py = b'%d'%D[1]
+			Pz = b'%d'%D[2]
+			POS = Px + aa + Py + aa + Pz + aa + vx + aa + vy + aa + vz + b'@*\r\n'
+			port.write(POS)
+			while True:
+				if pi.digitalRead(PIN_STAR) == 1:
+					pi.digitalWrite(PIN_END,0)
+					#tlv.time.sleep(2)
+					data = tlv.READ(5)
+					pi.digitalWrite(PIN_END,1)
+					for i in range(0,5):
+						for j in range(0,7):
+							f.write(format(int(data[i][j])) + ",")
+						f.write("\n")	
+					break
+		pi.digitalWrite(END,0)
+		tlv.time.sleep(1)
 
 if rr == b'155':
 	SS = sio.readline()

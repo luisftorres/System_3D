@@ -45,7 +45,7 @@ long int res_x = 16, res_yz = 20, resolution_x, resolution_yz;                  
 void X_Motor_Home(), Y_Motor_Home(), Z_Motor_Home(), Motors_Home(), X_Move_1_STEP(), Y_Move_1_STEP(), Z_Move_1_STEP();
 void X_1_STEP(boolean sentido),Y_1_STEP(boolean sentido), Z_1_STEP(boolean sentido);
 
-void READ_CONF_WORD(), CHOOSE_MATRIZ();
+void READ_CONF_WORD(), CHOOSE_MATRIZ(), READ_POSITION(),SET_POINTS();
 
 void Parametric_Curve();
 void Make_Matriz_xz();
@@ -82,7 +82,8 @@ void loop() {
      Motors_Home();
      Serial.println("Home*");
      x = 0; y = 0; z=0;
-     Parametric_Curve();
+     if(MODE == 1){READ_POSITION();}
+     else{Parametric_Curve();}
      Motors_Home();
      Serial.flush();}
         
@@ -93,40 +94,9 @@ void loop() {
     Motors_Home();
     x = 0; y = 0; z=0;
     XYZ_ENABLE(HIGH);
-    if(MODE == 1){
-      Serial.println("Posicione el primer punto");
-      while(1){
-      X_Move_1_STEP();
-      Y_Move_1_STEP();
-      Z_Move_1_STEP();
-      Print_Direction();
-      if((digitalRead(SAVE_POINT_1)== HIGH) && (digitalRead(SAVE_POINT_2)== LOW) ){
-        Point1[0] = x; Point1[1] = y; Point1[2] = z;
-        Serial.print("PUNTO 1");
-        Serial.print("@X1 = ");
-        Serial.print(Point1[0]);
-        Serial.print("@Y1 = ");
-        Serial.print(Point1[1]);
-        Serial.print("@Z1 = ");
-        Serial.print(Point1[2]);
-        Serial.print("@*");
-        break;}}
-        Serial.println("Posicione el segundo punto");
-        while(1){
-          X_Move_1_STEP(); Y_Move_1_STEP(); Z_Move_1_STEP();
-          Print_Direction();
-          if((digitalRead(SAVE_POINT_1)== LOW) && (digitalRead(SAVE_POINT_2)== HIGH)){
-            Point2[0] = x; Point2[1] = y; Point2[2] = z;
-            Serial.print("PUNTO 2");
-            Serial.print("@X2 = ");
-            Serial.print(Point2[0]);
-            Serial.print("@Y2 = ");
-            Serial.print(Point2[1]);
-            Serial.print("@Z2 = ");
-            Serial.println(Point2[2]);
-            Serial.print("@*");
-            break;}}}
-      delay(1000);
+    
+    if(MODE == 1){SET_POINTS();}
+    
     if(MODE == 2){
       Serial.println("Puntos dados por el usuario");
       X_Move_1_STEP(); Y_Move_1_STEP(); Z_Move_1_STEP();
@@ -136,18 +106,9 @@ void loop() {
     Motors_Home();
     x = 0; y = 0; z=0;
     Dx = Point2[0] - Point1[0]; Dy = Point2[1] - Point1[1]; Dz = Point2[2] - Point1[2];  
-    Serial.println("Diferencias");
-    Serial.print(Dx);
-    Serial.print("  ");
-    Serial.print(Dy);
-    Serial.print("  ");
-    Serial.print(Dz);
-    Serial.print("@*");
     CHOOSE_MATRIZ(); 
     Serial.flush();
-    Serial.end();
-  }
-  //delay(1000);
+    Serial.end();}
   
 }
 
@@ -155,7 +116,6 @@ void loop() {
 /* Parametric Curve*/
 
 void Parametric_Curve(){
-  //delay(1000);
   boolean wdog = true;
   pinMode(END,INPUT);
   boolean sentidox = HIGH;
@@ -269,53 +229,43 @@ XYZ_ENABLE(HIGH);}
 
 /*  X axis Motor send to Home */
 void X_Motor_Home(){
-    if(digitalRead(X_MIN_PIN)==LOW)
-    {
+  boolean wdog = true;
+  if(digitalRead(X_MIN_PIN)==LOW){
     digitalWrite(X_ENABLE_PIN,LOW);
-    while(1)
-    {
+    while(wdog){
       digitalWrite(X_DIR_PIN,sentido2);  // izquierda
       digitalWrite(X_STEP_PIN,HIGH);
       delayMicroseconds(V_measure);
       digitalWrite(X_STEP_PIN,LOW);
       delayMicroseconds(V_measure);
-      if(digitalRead(X_MIN_PIN)==HIGH)
-      {break;}
-    }}}
+      if(digitalRead(X_MIN_PIN)==HIGH){wdog = false;}}}}
 
 /*  Y axis Motor send to Home */
-void Y_Motor_Home()
-{
-    if(digitalRead(Y_MIN_PIN)==LOW)
-    {
+void Y_Motor_Home(){
+  boolean wdog = true;
+  if(digitalRead(Y_MIN_PIN)==LOW){
     digitalWrite(Y_ENABLE_PIN,LOW);
-    while(1)
-    {
+    while(wdog){
       digitalWrite(Y_DIR_PIN,sentido1); // abajo
       digitalWrite(Y_STEP_PIN,HIGH);
       delayMicroseconds(V_measure);
       digitalWrite(Y_STEP_PIN,LOW);
       delayMicroseconds(V_measure);
-      if(digitalRead(Y_MIN_PIN)==HIGH)
-      {break;}
-    }}}
+      if(digitalRead(Y_MIN_PIN)==HIGH){wdog = false;}}}}
 
 /*  Z axis Motor send to Home */
-void Z_Motor_Home()
-{
-    if((digitalRead(Z_DER_PIN)==LOW)&&(digitalRead(Z_IZQ_PIN)==LOW))
-    {
+void Z_Motor_Home(){
+  boolean wdog = true;
+  if((digitalRead(Z_DER_PIN)==LOW)&&(digitalRead(Z_IZQ_PIN)==LOW)){
     digitalWrite(Z_ENABLE_PIN,LOW);
-    while(1)
-    {
+    while(wdog){
       digitalWrite(Z_DIR_PIN,sentido2);  // atras
       digitalWrite(Z_STEP_PIN,HIGH);
       delayMicroseconds(V_measure);
       digitalWrite(Z_STEP_PIN,LOW);
       delayMicroseconds(V_measure);
       if((digitalRead(Z_DER_PIN)==HIGH)&&(digitalRead(Z_IZQ_PIN)==HIGH))
-      {break;}
-    }}}
+      {wdog = false;}}}}
     
     
     
@@ -325,7 +275,6 @@ void Motors_Home(){ Y_Motor_Home(); X_Motor_Home(); Z_Motor_Home();}
 
 /*  X axis Motor Move 1 Step */
 void X_Move_1_STEP(){
- // digitalWrite(X_ENABLE_PIN,HIGH);
   if((digitalRead(X_FRONT_PIN)==HIGH) && (digitalRead(X_BEHIND_PIN)==LOW)){
       digitalWrite(X_ENABLE_PIN,LOW);
       digitalWrite(X_DIR_PIN,sentido1);
@@ -345,11 +294,13 @@ void X_Move_1_STEP(){
         delayMicroseconds(V_manual);
         x--;
       }
-      if(digitalRead(X_MIN_PIN)==HIGH)x = 0;}}
+      if(digitalRead(X_MIN_PIN)==HIGH)x = 0;}
+      
+  if((digitalRead(X_FRONT_PIN)==HIGH) && (digitalRead(X_BEHIND_PIN)==HIGH)){
+      digitalWrite(X_ENABLE_PIN,HIGH);}}
 
 /*  Y axis Motor Move 1 Step */
 void Y_Move_1_STEP(){
- // digitalWrite(Y_ENABLE_PIN,HIGH);
   if((digitalRead(Y_FRONT_PIN)==HIGH) && (digitalRead(Y_BEHIND_PIN)==LOW)){
       digitalWrite(Y_ENABLE_PIN,LOW);
       digitalWrite(Y_DIR_PIN,sentido2);
@@ -368,11 +319,13 @@ void Y_Move_1_STEP(){
         digitalWrite(Y_STEP_PIN,LOW);
         delayMicroseconds(V_manual);
         y--;}
-      if(digitalRead(Y_MIN_PIN)==HIGH) y = 0;}}
+      if(digitalRead(Y_MIN_PIN)==HIGH) y = 0;}
+      
+    if((digitalRead(Y_FRONT_PIN)==HIGH) && (digitalRead(Y_BEHIND_PIN)==HIGH)){
+      digitalWrite(Y_ENABLE_PIN,HIGH);}}
 
 /*  Z axis Motor Move 1 Step */
 void Z_Move_1_STEP(){
- // digitalWrite(Z_ENABLE_PIN,HIGH);
   if((digitalRead(Z_FRONT_PIN)==HIGH) && (digitalRead(Z_BEHIND_PIN)==LOW)){
       digitalWrite(Z_ENABLE_PIN,LOW);
       digitalWrite(Z_DIR_PIN,sentido1);
@@ -393,11 +346,13 @@ void Z_Move_1_STEP(){
         delayMicroseconds(V_manual);
         z--;
       }
-      if((digitalRead(Z_DER_PIN)==HIGH)&&(digitalRead(Z_IZQ_PIN)==HIGH)){
-        z = 0;
-      }
-    }    
-}
+      if((digitalRead(Z_DER_PIN)==HIGH)&&(digitalRead(Z_IZQ_PIN)==HIGH)){z = 0;}}
+      
+      if((digitalRead(Z_FRONT_PIN)==HIGH) && (digitalRead(Z_BEHIND_PIN)==HIGH)){
+      digitalWrite(Z_ENABLE_PIN,HIGH);}}
+      
+      
+      
 /*  Move X axis 1 Step */
 void X_1_STEP(boolean sentido){
   digitalWrite(X_ENABLE_PIN,LOW);
@@ -804,6 +759,21 @@ void Print_Direction(){
   }
 }
 
+/*READ POSITION*/
+void READ_POSITION(){
+  boolean wdog = true;
+  while(true){
+    //XYZ_ENABLE(HIGH);
+    X_Move_1_STEP();
+    Y_Move_1_STEP();
+    Z_Move_1_STEP();
+    if(digitalRead(SAVE_POINT_1)== LOW){wdog = false; Serial.print("Read Position Finished@+*");}
+    else Print_Direction();}}
+
+
+
+
+/*SET CONFIGURATION PINS  */
 void Configuration(){
   Serial.begin(115200);
  Serial.println("Bienvenidos");
@@ -922,6 +892,42 @@ void XYZ_ENABLE(boolean mode){
    digitalWrite(Z_ENABLE_PIN,mode);}
    
    
+void SET_POINTS(){
+      Serial.println("Posicione el primer punto");
+      while(1){
+      X_Move_1_STEP();
+      Y_Move_1_STEP();
+      Z_Move_1_STEP();
+      Print_Direction();
+      if((digitalRead(SAVE_POINT_1)== HIGH) && (digitalRead(SAVE_POINT_2)== LOW) ){
+        Point1[0] = x; Point1[1] = y; Point1[2] = z;
+        Serial.print("PUNTO 1");
+        Serial.print("@X1 = ");
+        Serial.print(Point1[0]);
+        Serial.print("@Y1 = ");
+        Serial.print(Point1[1]);
+        Serial.print("@Z1 = ");
+        Serial.print(Point1[2]);
+        Serial.print("@*");
+        break;}}
+        Serial.println("Posicione el segundo punto");
+        while(1){
+          X_Move_1_STEP(); Y_Move_1_STEP(); Z_Move_1_STEP();
+          Print_Direction();
+          if((digitalRead(SAVE_POINT_1)== LOW) && (digitalRead(SAVE_POINT_2)== HIGH)){
+            Point2[0] = x; Point2[1] = y; Point2[2] = z;
+            Serial.print("PUNTO 2");
+            Serial.print("@X2 = ");
+            Serial.print(Point2[0]);
+            Serial.print("@Y2 = ");
+            Serial.print(Point2[1]);
+            Serial.print("@Z2 = ");
+            Serial.println(Point2[2]);
+            Serial.print("@*");
+            break;}}}
+            
+            
+            
 void CHOOSE_MATRIZ(){
   
       if((Dx > 0)&&(Point2[1] == Point1[1])&&(Dz > 0)){
