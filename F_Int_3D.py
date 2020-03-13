@@ -1,34 +1,65 @@
-import TLV493D as tlv
-import FUNC_1 as fun
+import F_TLV493D as tlv
+import FUNC_PAR as fun
 import serial
 import numpy as np
 import io
 import wiringpi as pi
 
 
-# Create a File.txt
-print("Input the file name:	")
-name = input()
-f = open(name + ".csv","w+")
-f.write("REG0,REG1,REG2,REG3,REG4,REG5,REG6\n")
-
-#Configure GPIO
-pi.wiringPiSetupGpio()
 PIN_STAR = 	17
 PIN_END = 	27
 END = 22
-pi.pinMode(PIN_STAR,0)
-pi.pinMode(PIN_END,1)
-pi.pinMode(END,0)
-pi.digitalWrite(PIN_END,0)
+
+class system_3d():
+	def __init__(self):
+		# port configuration
+		self.port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=2.0, parity = serial.PARITY_NONE)
+		self.sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
+		#Configure GPIO
+		pi.wiringPiSetupGpio()
+		pi.pinMode(PIN_STAR,0)
+		pi.pinMode(PIN_END,1)
+		pi.pinMode(END,0)
+		pi.digitalWrite(PIN_END,0)
+		
+		
+	def create_file(self):
+		# Create a File.txt
+		print("Input the file name:	")
+		name = input()
+		self.f = open(name + ".csv","w+")
+		self.f.write("REG0,REG1,REG2,REG3,REG4,REG5,REG6\n")
+	
+	def rwup(self,s_timewait):	#read word until plus 
+		self.port.timeout = s_timewait
+		while True:
+			P = self.port.read_until(b'*',s_timewait)
+			i = 0
+			h = ''
+			while (i < len(P)):
+				if chr(P[i]) == '@':
+					print(h)
+					h = ''
+				else:
+					h = h + chr(P[i])
+				if chr(P[i]) == '*':
+					break
+				i = i + 1
+			if chr(P[i-1]) == '+':
+				break
+		return -1
+	
+	def 
+		
+
+
 
 
 # Configure sensor
 tlv.CONF()
 
 
-port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=2.0, parity = serial.PARITY_NONE)
-sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
+
 
 rr = b'35'
 aa = b'@'
@@ -198,3 +229,4 @@ if rr == b'155':
 port.timeout = 1.0
 f.close()	
 port.close()
+

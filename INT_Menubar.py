@@ -17,7 +17,7 @@ def Menubar(window):
 	filemenu.add_command(label = "Save as...", command = donothing, font=("Times New Roman",10))
 	filemenu.add_command(label = "Close", command = donothing, font=("Times New Roman",10))
 
-	filemenu.add_separator()
+	filemenu.add_separator() 
 
 	filemenu.add_command(label="Exit", command=window.quit, font=("Times New Roman",10), background = "red")
 	menubar.add_cascade(label="File", menu=filemenu, font=("Times New Roman",10))
