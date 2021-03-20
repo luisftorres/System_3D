@@ -12,7 +12,7 @@ import numpy as np
 cols = 7
 
 class tlv_sensor():
-    def __init__(self, addr_1 = 0x5e, addr_2 = 0x5e, mode_sensor = 0x07, t_wait = 0.001,Bus = 3):
+    def __init__(self, addr_1 = 0x1f, addr_2 = 0x1f, mode_sensor = 0x07, t_wait = 0.001,Bus = 3):
         self.addr_1     = addr_1
         self.addr_2     = addr_2
         self.mode_sensor= mode_sensor

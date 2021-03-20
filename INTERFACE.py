@@ -11,17 +11,32 @@ window.title("3DINTERSYS")
 window.iconphoto(False, icon)
 window.geometry('800x500')
 
+fi = open("solecar_1" + ".csv","w+")
+fi.write("Current,REG0,REG1,REG2,REG3,REG4,REG5,REG6\n")
 
 Mb.Menubar(window)
+
+def stopwrite():
+	fi.close()
+	return -1
 
 def measures_tlv():
 	T_MX.delete(CURRENT,END)
 	Nomeasures = E_NM.get()
+	Curr = E_i.get()
+	#TLV.addr_1 = 0x1f
+	#TLV.addr_2 = 0x1f
 	data_m = TLV.READ(int(Nomeasures))
 	V12 = TLV.CONV(data_m)
 	T_MX.insert(INSERT,"Bx = " + str(V12[0][0]) + " Gauss \n")
 	T_MX.insert(INSERT,"By = " + str(V12[0][1]) + " Gauss \n")
 	T_MX.insert(INSERT,"Bz = " + str(V12[0][2]) + " Gauss \n")
+	
+	for i in range(1,int(Nomeasures)):
+		fi.write(format(float(Curr)) + ",")
+		for j in range(0,7):
+			fi.write(format(int(data_m[i][j])) + ",")
+		fi.write("\n")
 	return -1
 	
 
@@ -91,8 +106,14 @@ E_NM.place(x = 170, y = 300, height = 20, width = 40)
 B_M = Button(window,text = "Measure", fg = "blue",font=("Times New Roman",10), command = measures_tlv)
 B_M.place(x = 210, y = 300, height = 20, width = 50)
 
+L_i = Label(window,text = "i", font=("Times New Roman",10))
+L_i.place(x = 80, y = 320, height = 20, width = 20)
+E_i = Entry(window,font=("Times New Roman",10))
+E_i.insert(0,1)
+E_i.place(x = 100, y = 320, height = 20, width = 40)
+
 T_MX = Text(window,font=("Times New Roman",10))
-T_MX.place(x = 80, y = 330, height = 60, width = 180)
+T_MX.place(x = 80, y = 340, height = 60, width = 180)
 
 
 # Parametric curve or matrix 
@@ -109,7 +130,7 @@ Run = Button(window, text = "Run", fg = "green", font=("Times New Roman",10))
 Run.place(x = 600, y = 350, height = 20, width = 50)
 Pause = Button(window, text = "Pause", fg = "blue", font=("Times New Roman",10))
 Pause.place(x = 650, y = 350, height = 20, width = 50)
-Stop = Button(window, text = "Stop", fg = "Red", font=("Times New Roman",10))
+Stop = Button(window, text = "Stop", fg = "Red", font=("Times New Roman",10), command = stopwrite)
 Stop.place(x = 700, y = 350, height = 20, width = 50)
 
 

@@ -1,8 +1,12 @@
-import TLV493D as tlv
-import FUNC_1 as fun
-import serial
-import numpy as np
-import io
+# Universidad de Guanajuato
+# Lftorresavitia@gmail.com
+# Control Code for the measurement 3D system
+
+import TLV493D as tlv			# Measurement sensor function "Made by LFTA"
+import FUNC_1 as fun			# Parametris functions function "Made by LFTA"
+import serial					# Serial protocolo 
+import numpy as np				# Math 
+import io						# "add information"
 import wiringpi as pi
 
 
@@ -25,28 +29,27 @@ pi.digitalWrite(PIN_END,0)
 
 # Configure sensor
 tlv.CONF()
-
-
 port = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=2.0, parity = serial.PARITY_NONE)
 sio = io.TextIOWrapper(io.BufferedRWPair(port, port))
 
-rr = b'35'
-aa = b'@'
-# punto 1
+rr = b'155'						# if is b'35' is to parametric curves and if is b'155' 
+								# is manual for an nxn matrix
+aa = b'@'						# to separate words in the serial line to arduiono
+# point 1
 X1 = b'3694'
 Y1 = b'0'
 Z1 = b'0'
 
-# punto 2
+# point 2
 X2 = b'12127'
 Y2 = b'0'
 Z2 = b'0'
 
 # Resolution
-R_Factor = b'10'
-V_measure = b'150'
-V_manual = b'150'
-MODO = b'2'
+R_Factor = b'10'				# Factor resolution Resolution = R_Factor*motor_resolution (16 for x and 20 for yz)
+V_measure = b'150'				# time into enable and disanable motor step to give velocity	
+V_manual = b'150'				# 
+MODO = b'2'						# Use b'1'	to get the current position and b'2' make measurement parametirc curve			
 WORD = rr + aa + MODO + aa + X1 + aa + Y1 + aa + Z1 + aa + X2 + aa + Y2 + aa + Z2 + aa + R_Factor + aa + V_measure + aa + V_manual + b'@*'
 #print(WORD)
 # Start presentation system
@@ -64,17 +67,17 @@ port.write(WORD + b'\r\n')
 	
 
 # Parametrics curves 
-a = 0.1
-b = 0.06
-c = 0.005
+a = 0.09321
+b = 0.07241
+c = 0.06768
 
-ra = 0.05
-rb = 0.05
-lz = 0.05
+ra = 0.036
+rb = 0.036
+lz = 0.08
 P1 = [0.01,0.01,0.04]
 P2 = [0.1,0.1,0.1]
-LAPS = 50
-NO_DOTS = 5000
+LAPS = 100
+NO_DOTS = 10000
 t = np.transpose(np.linspace(0,1,NO_DOTS))
 
 u = np.transpose(np.linspace(0,2*LAPS*np.pi,NO_DOTS))
@@ -89,9 +92,9 @@ te = np.transpose(np.linspace(0,30*np.pi,NO_DOTS))
 
 
 # esfera
-a_es = 0.05
-b_es = 0.05
-c_es = 0.05
+a_es = 0.09321
+b_es = 0.07241
+c_es = 0.06768
 
 r_es = 0.03
 u_es = np.transpose(np.linspace(0,2*LAPS*np.pi,NO_DOTS))
@@ -126,10 +129,10 @@ if rr == b'35':
 	if MODO == b'2':			
 		for w in range(0,1):
 			for z in range(0,NO_DOTS):
-				#D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
+				D = fun.CILINDRO_ESFERICO(a,b,c,ra,rb,lz,u[z],v[z])
 				#D = fun.LINEA_RECTA(P1,P2,t[z])
 				#D = fun.ESPIRAL_ARQUIMIDES(ae,be,ce,t1e[z],te[z])
-				D = fun.ESFERA(a_es,b_es,c_es,r_es,u_es[z],v_es[z])
+				#D = fun.ESFERA(a_es,b_es,c_es,r_es,u_es[z],v_es[z])
 				print(D)
 				pi.digitalWrite(PIN_END,1)
 				Px = b'%d'%D[0]
